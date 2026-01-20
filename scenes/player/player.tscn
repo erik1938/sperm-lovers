@@ -2,27 +2,16 @@
 
 [ext_resource type="Script" uid="uid://dlbvddyy2ax2w" path="res://scripts/player.gd" id="1_8afob"]
 [ext_resource type="PackedScene" uid="uid://dpumo2pm1yuxh" path="res://art/glbtf/SpermPlayer.glb" id="2_dovo2"]
+[ext_resource type="PackedScene" uid="uid://d1ofmfucyb25p" path="res://scenes/player/bullet.tscn" id="2_gmlin"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_dovo2"]
 
-[sub_resource type="SphereMesh" id="SphereMesh_gmlin"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_8afob"]
-size = Vector3(0.2, 0.2, 0.5)
-
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_8afob")
+bullet_scene = ExtResource("2_gmlin")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("SphereShape3D_dovo2")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-visible = false
-mesh = SubResource("SphereMesh_gmlin")
-
-[node name="DirectionIndicator" type="MeshInstance3D" parent="MeshInstance3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.5)
-mesh = SubResource("BoxMesh_8afob")
 
 [node name="ShootingPoint" type="Node3D" parent="."]
 visible = false

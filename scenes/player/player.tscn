@@ -17,7 +17,7 @@ pellet_count = 3
 shape = SubResource("SphereShape3D_dovo2")
 
 [node name="ShootingPoint" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.4, 2)
 visible = false
 
 [node name="SpermPlayer" parent="." instance=ExtResource("2_dovo2")]

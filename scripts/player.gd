@@ -36,6 +36,7 @@ var knockback_velocity := Vector3.ZERO
 
 func _ready() -> void:
 	health = max_health
+	add_to_group("player")
 
 
 func _physics_process(delta: float) -> void:

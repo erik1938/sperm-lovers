@@ -32,12 +32,11 @@ func _physics_process(_delta: float) -> void:
 
 
 func pick_new_wander_target() -> void:
-	var random_offset = Vector3(
-		randf_range(-wander_range, wander_range),
-		0,
-		randf_range(-wander_range, wander_range)
+	wander_target = Vector3(
+		home_position.x + randf_range(-wander_range, wander_range),
+		global_position.y,
+		home_position.z + randf_range(-wander_range, wander_range)
 	)
-	wander_target = home_position + random_offset
 
 
 func take_damage() -> void:

@@ -57,7 +57,7 @@ func handle_aiming_input() -> void:
 
 func handle_movement() -> void:
 	var input_dir := Vector3.ZERO
-	
+
 	if Input.is_action_pressed("move_forward"):
 		input_dir += iso_forward
 	if Input.is_action_pressed("move_back"):
@@ -66,11 +66,16 @@ func handle_movement() -> void:
 		input_dir += iso_left
 	if Input.is_action_pressed("move_right"):
 		input_dir += iso_right
-	
+
 	input_dir = input_dir.normalized()
 	var current_speed = (move_speed * aim_move_speed_multiplier) if is_aiming else move_speed
-	velocity.x = input_dir.x * current_speed
-	velocity.z = input_dir.z * current_speed
+
+	# Reduce input influence during knockback (knockback takes priority)
+	var knockback_strength = knockback_velocity.length()
+	var input_scale = clampf(1.0 - (knockback_strength / knockback_force), 0.0, 1.0)
+
+	velocity.x = input_dir.x * current_speed * input_scale
+	velocity.z = input_dir.z * current_speed * input_scale
 
 func handle_aim() -> void:
 	var camera := get_viewport().get_camera_3d()

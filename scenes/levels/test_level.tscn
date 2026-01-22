@@ -323,3 +323,4 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9690824, 0.8715956, -4.2736
 
 [node name="WhiteBloodCell" parent="." instance=ExtResource("4_v45ci")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0713403, 1.6586838, -9.263895)
+chase_speed = 2.0

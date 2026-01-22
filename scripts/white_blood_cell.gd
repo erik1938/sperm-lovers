@@ -4,7 +4,7 @@ extends CharacterBody3D
 @export var wander_range: float = 3.0
 @export var health: int = 5
 @export var detection_range: float = 8.0
-@export var chase_speed: float = 4.0
+@export var chase_speed: float = 2.5
 @export var attack_damage: int = 2
 @export var knockback_force: float = 12.0
 @export var attack_cooldown: float = 1.0
@@ -16,6 +16,7 @@ var wander_target: Vector3
 var home_position: Vector3
 var current_target: Node3D = null
 var is_chasing: bool = false
+var is_aggro: bool = false
 var can_attack: bool = true
 
 @onready var attack_hitbox: Area3D = $AttackHitbox
@@ -32,12 +33,13 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	# Check for nearby targets (player or sibling sperm)
-	detect_targets()
+	# Only chase if aggro (has been shot)
+	if is_aggro:
+		detect_targets()
 
 	var base_velocity := Vector3.ZERO
 
-	if is_chasing and is_instance_valid(current_target):
+	if is_aggro and is_chasing and is_instance_valid(current_target):
 		# Use horizontal distance only (ignore Y height difference)
 		var horizontal_diff = current_target.global_position - global_position
 		horizontal_diff.y = 0
@@ -103,65 +105,55 @@ func get_separation_from_other_wbcs() -> Vector3:
 
 
 func detect_targets() -> void:
-	var nearest_target: Node3D = null
-	var nearest_distance: float = detection_range
-
-	# Check for player (use horizontal distance only)
+	# Only target the player
 	var player = get_tree().get_first_node_in_group("player")
 	if player and is_instance_valid(player):
 		var horizontal_diff = player.global_position - global_position
 		horizontal_diff.y = 0
 		var dist = horizontal_diff.length()
-		if dist < nearest_distance:
-			nearest_distance = dist
-			nearest_target = player
+		if dist < detection_range:
+			current_target = player
+			is_chasing = true
+			return
 
-	# Check for sibling sperm (they're in "enemies" group but have "become_aggro" method)
-	for entity in get_tree().get_nodes_in_group("enemies"):
-		if entity == self:
-			continue
-		if not entity.has_method("become_aggro"):
-			continue  # Skip other white blood cells
-		var horizontal_diff = entity.global_position - global_position
-		horizontal_diff.y = 0
-		var dist = horizontal_diff.length()
-		if dist < nearest_distance:
-			nearest_distance = dist
-			nearest_target = entity
-
-	if nearest_target:
-		current_target = nearest_target
-		is_chasing = true
-	else:
-		is_chasing = false
-		current_target = null
+	is_chasing = false
+	current_target = null
 
 
 func take_damage(amount: int) -> void:
 	health -= amount
 	print("White blood cell took ", amount, " damage! Health: ", health)
+
+	# Become aggro when shot
+	if not is_aggro:
+		become_aggro()
+
 	if health <= 0:
 		print("White blood cell died!")
 		queue_free()
 
 
+func become_aggro(_target: Node3D = null) -> void:
+	# Note: WBC ignores target parameter - always targets player
+	if is_aggro:
+		return
+	is_aggro = true
+	print("White blood cell became aggro!")
+
+
 func _on_attack_hitbox_body_entered(body: Node3D) -> void:
+	if not is_aggro:
+		return
 	if not can_attack:
 		return
-
-	# Attack player
-	if body.is_in_group("player") and body.has_method("take_damage"):
-		body.take_damage(attack_damage, global_position)
-		can_attack = false
-		get_tree().create_timer(attack_cooldown).timeout.connect(_reset_attack)
+	if not body.is_in_group("player"):
+		return
+	if not body.has_method("take_damage"):
 		return
 
-	# Attack sibling sperm (enemies with become_aggro method)
-	if body.is_in_group("enemies") and body.has_method("become_aggro") and body.has_method("take_damage"):
-		# WBC deals damage with knockback to siblings too
-		body.take_damage(attack_damage)
-		can_attack = false
-		get_tree().create_timer(attack_cooldown).timeout.connect(_reset_attack)
+	body.take_damage(attack_damage, global_position)
+	can_attack = false
+	get_tree().create_timer(attack_cooldown).timeout.connect(_reset_attack)
 
 
 func _reset_attack() -> void:

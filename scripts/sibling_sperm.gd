@@ -3,7 +3,7 @@ extends CharacterBody3D
 @export var move_speed: float = 2.0
 @export var wander_range: float = 5.0
 @export var health: int = 2
-@export var chase_speed: float = 3.0
+@export var chase_speed: float = 2.2
 @export var aggro_alert_range: float = 5.0
 @export var attack_damage: int = 1
 @export var attack_cooldown: float = 0.5
@@ -68,7 +68,7 @@ func take_damage(amount: int) -> void:
 		var player = get_tree().get_first_node_in_group("player")
 		if player:
 			become_aggro(player)
-			alert_nearby_siblings(player)
+			alert_nearby_enemies(player)
 
 	if health <= 0:
 		print("Sibling died!")
@@ -81,14 +81,17 @@ func become_aggro(new_target: Node3D) -> void:
 	print("Sibling became aggro!")
 
 
-func alert_nearby_siblings(aggro_target: Node3D) -> void:
-	for sibling in get_tree().get_nodes_in_group("enemies"):
-		if sibling == self:
+func alert_nearby_enemies(aggro_target: Node3D) -> void:
+	# Alert both sibling sperm and white blood cells
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if enemy == self:
 			continue
-		if not sibling.has_method("become_aggro"):
+		if not enemy.has_method("become_aggro"):
 			continue
-		if global_position.distance_to(sibling.global_position) <= aggro_alert_range:
-			sibling.become_aggro(aggro_target)
+		var horizontal_diff = enemy.global_position - global_position
+		horizontal_diff.y = 0
+		if horizontal_diff.length() <= aggro_alert_range:
+			enemy.become_aggro(aggro_target)
 
 
 func _on_attack_hitbox_body_entered(body: Node3D) -> void:

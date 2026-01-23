@@ -336,3 +336,6 @@ model_rotation_offset = -1.571
 transform = Transform3D(-0.005270858, 0, 0.9999861, 0, 1, 0, -0.9999861, 0, -0.005270858, 1.0713403, 1.6586838, -9.263895)
 chase_speed = 2.0
 model_rotation_offset = -1.571
+
+[node name="WhiteBloodCell2" parent="." instance=ExtResource("4_v45ci")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.154396, 1, -12.667085)

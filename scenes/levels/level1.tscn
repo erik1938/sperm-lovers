@@ -305,9 +305,8 @@ shadow_mesh = SubResource("ArrayMesh_c4rlr")
 
 [node name="Level1" type="Node3D"]
 
-[node name="Player" parent="." instance=ExtResource("4_bfxgj")]
+[node name="Player" parent="." groups=["player"] instance=ExtResource("4_bfxgj")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 22, 1, 87)
-move_speed = 20.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1seuy")

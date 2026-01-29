@@ -11,7 +11,7 @@ signal valve_stopped  # Emitted when player stops interacting
 
 # --- Configuration ---
 @export var fill_time: float = 10.0  # Seconds to complete
-@export var regress_time: float = 7.0  # Seconds to fully regress
+@export var regress_time: float = 120.0  # Seconds to fully regress
 @export var interaction_range: float = 2.0  # How close player must be
 
 # --- State ---
@@ -68,10 +68,10 @@ func _input(event: InputEvent) -> void:
 	if not player_in_range:
 		return
 
-	# Check for interact action (E key)
-	if event.is_action_pressed("interact"):
+	# Check for shoot action (left click)
+	if event.is_action_pressed("shoot"):
 		_start_interaction()
-	elif event.is_action_released("interact"):
+	elif event.is_action_released("shoot"):
 		_stop_interaction()
 
 func _start_interaction() -> void:

@@ -26,6 +26,15 @@ signal died()  # For MapManager respawn system
 @export var attraction_speed: float = 4.0
 @export var attraction_stop_distance: float = 0.6
 
+# Contact damage (for valve puzzle)
+@export var contact_damage: int = 1
+@export var contact_damage_cooldown: float = 1.0
+var can_deal_contact_damage: bool = true
+
+# Valve attraction
+var is_attracted_to_valve: bool = false
+var valve_attraction_position: Vector3 = Vector3.ZERO
+
 # State
 var health: int
 var wander_target: Vector3
@@ -112,9 +121,16 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# Priority: Attraction to toilet zone
+	# Priority 1: Attraction to active valve (highest priority)
+	if is_attracted_to_valve:
+		_handle_valve_attraction(delta)
+		_check_contact_damage()
+		return
+
+	# Priority 2: Attraction to toilet zone
 	if is_attracted_to_toilet:
 		_handle_toilet_attraction(delta)
+		_check_contact_damage()
 		return
 
 	# Static & peaceful → no movement
@@ -181,21 +197,73 @@ func _physics_process(delta: float) -> void:
 func _handle_toilet_attraction(delta: float) -> void:
 	var to_target = toilet_attraction_position - global_position
 	to_target.y = 0
-	
+
 	if to_target.length() < attraction_stop_distance:
 		is_attracted_to_toilet = false
 		velocity = Vector3.ZERO
 		print("[Sperm] Reached attraction target!")
 		return
-	
+
 	var dir = to_target.normalized()
 	velocity = dir * attraction_speed
-	
+
 	# Light separation during attraction
 	velocity += get_separation_from_enemies() * 0.6
-	
+
 	move_and_slide()
 	_rotate_toward_movement()
+
+func _handle_valve_attraction(delta: float) -> void:
+	var to_target = valve_attraction_position - global_position
+	to_target.y = 0
+
+	# Move toward valve but don't stop - crowd around it
+	if to_target.length() > 0.5:
+		var dir = to_target.normalized()
+		velocity = dir * attraction_speed
+	else:
+		# Very close - slow down but keep slight movement
+		velocity = to_target * 0.5
+
+	# Light separation during attraction
+	velocity += get_separation_from_enemies() * 0.4
+
+	move_and_slide()
+	_rotate_toward_movement()
+
+func _check_contact_damage() -> void:
+	if not can_deal_contact_damage:
+		return
+
+	# Check if touching player
+	var player = get_tree().get_first_node_in_group("player")
+	if player and is_instance_valid(player):
+		var dist = global_position.distance_to(player.global_position)
+		if dist < 1.5 and player.has_method("take_damage"):
+			player.take_damage(contact_damage, global_position)
+			can_deal_contact_damage = false
+			get_tree().create_timer(contact_damage_cooldown).timeout.connect(_reset_contact_damage)
+			print("[Sperm] Dealt contact damage to player!")
+
+func _reset_contact_damage() -> void:
+	can_deal_contact_damage = true
+
+# Called by Level2Puzzle when a valve is activated
+func on_valve_activated(valve_pos: Vector3) -> void:
+	is_attracted_to_valve = true
+	is_attracted_to_toilet = false
+	valve_attraction_position = valve_pos
+	is_aggro = false
+	is_chasing = false
+	current_target = null
+	print("[Sperm] Attracted to valve at ", valve_pos)
+
+# Called by Level2Puzzle when valve is deactivated
+func on_valve_deactivated() -> void:
+	is_attracted_to_valve = false
+	# Return to toilet attraction
+	is_attracted_to_toilet = true
+	print("[Sperm] Valve deactivated, returning to toilet attraction")
 
 func _rotate_toward_movement() -> void:
 	if velocity.length() < 0.1: return

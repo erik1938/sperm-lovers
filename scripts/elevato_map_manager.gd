@@ -140,7 +140,7 @@ func get_active_count() -> int:
 
 # Signal handler for sibling death
 func _handle_sibling_died(sibling: Node) -> void:
-	print("Sibling died: ", sibling.name if sibling else "Unknown")
+	print("Sibling died: ", str(sibling.name) if sibling else "Unknown")
 	var spawn_pos = sibling.global_position if sibling else Vector3.ZERO
 	active_siblings.erase(sibling)
 
@@ -150,7 +150,7 @@ func _handle_sibling_died(sibling: Node) -> void:
 
 # Signal handler for sibling removal
 func _handle_sibling_removed(sibling: Node) -> void:
-	print("Sibling removed from tree: ", sibling.name if sibling else "Unknown")
+	print("Sibling removed from tree: ", str(sibling.name) if sibling else "Unknown")
 	active_siblings.erase(sibling)
 
 func _schedule_respawn(spawn_pos: Vector3) -> void:
